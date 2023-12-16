@@ -89,6 +89,26 @@ app.get('/students',async(req,res) =>{
         res.status(500).json({ error: 'Internal Server Error' });        
     }
 })
+
+app.put('/students/:id', async(req,res) => {
+    try {
+        const students = await readDataFromFile();
+        const studentId = parseInt(req.params.id);
+        const foundStudent = students.find((student) => student.id === studentId)
+        if(foundStudent){
+            foundStudent.name = req.body.name;
+            foundStudent.age = req.body.age;
+            foundStudent.grade = req.body.grade;
+            await writeDataToFile(students);
+            res.json(foundStudent);
+    } else {
+      res.status(404).json({ error: 'Student not found' });
+        }
+    } catch (error) {
+        console.error('Error handling POST request:', error.message);
+        res.status(500).json({ error: 'Internal Server Error' }); 
+    }
+})
   
 
 app.listen( PORT, ()=> {
