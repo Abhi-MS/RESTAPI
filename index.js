@@ -34,6 +34,15 @@ async function writeDataToFile(data) {
  }
 }
 
+function paginateItems(items, cursor, perPage = 10) {
+    const start = cursor ? parseInt(cursor) : 0;
+    const end = start + perPage;
+    return {
+      data: items.slice(start, end),
+      cursor: end < items.length ? end.toString() : null,
+    };
+  }
+
 app.post('/students', async (req, res) => {
     try {
       const students = await readDataFromFile();
@@ -65,6 +74,19 @@ app.get('/student/:id', async(req,res) => {
     } catch (error) {
         console.error('Error handling POST request:', error.message);
         res.status(500).json({ error: 'Internal Server Error' });
+    }
+})
+
+app.get('/students',async(req,res) =>{
+    try {
+        const students = await readDataFromFile();
+        const cursor = req.query.cursor;
+        const paginatedStudentsList = paginateItems(students, cursor);
+        res.json(paginatedStudentsList)
+        
+    } catch (error) {
+        console.error('Error handling POST request:', error.message);
+        res.status(500).json({ error: 'Internal Server Error' });        
     }
 })
   
