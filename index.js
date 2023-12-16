@@ -24,17 +24,17 @@ async function readDataFromFile() {
         return [];
       }
     }
-  }
+}
 
-  async function writeDataToFile(data) {
-    try {
+async function writeDataToFile(data) {
+ try {
       await fs.writeFile('students.json', JSON.stringify(data, null, 2), 'utf8');
-    } catch (error) {
-      console.error('Error writing data to file:', error.message);
-    }
-  }
+ } catch (error) {
+   console.error('Error writing data to file:', error.message);
+ }
+}
 
-  app.post('/students', async (req, res) => {
+app.post('/students', async (req, res) => {
     try {
       const students = await readDataFromFile();
       const newStudent = {
@@ -51,6 +51,23 @@ async function readDataFromFile() {
       res.status(500).json({ error: 'Internal Server Error' });
     }
   });
+
+app.get('/student/:id', async(req,res) => {
+    try {
+        const students = await readDataFromFile();
+        const studentId = parseInt(req.params.id);
+        const foundStudent = students.find((student) => student.id === studentId)
+        if (foundStudent) {
+            res.json(foundStudent);
+          } else {
+            res.status(404).json({ error: 'Student not found' });
+          }
+    } catch (error) {
+        console.error('Error handling POST request:', error.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+})
+  
 
 app.listen( PORT, ()=> {
     console.log(`Successfully started server on port ${PORT}.`)
