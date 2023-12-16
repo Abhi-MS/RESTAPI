@@ -1,5 +1,56 @@
-const app = require('express');
+const express = require('express');
+const bodyParser = require('body-parser');
+const fs = require('fs/promises');
+
+
+const app = express();
 const PORT = 3000;
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+async function readDataFromFile() {
+    try {
+      const data = await fs.readFile('students.json', 'utf8');
+      if(!data.trim()){
+        return[];
+      }
+      return JSON.parse(data);
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        return [];
+      } else {
+        console.error('Error reading data from file:', error.message);
+        return [];
+      }
+    }
+  }
+
+  async function writeDataToFile(data) {
+    try {
+      await fs.writeFile('students.json', JSON.stringify(data, null, 2), 'utf8');
+    } catch (error) {
+      console.error('Error writing data to file:', error.message);
+    }
+  }
+
+  app.post('/students', async (req, res) => {
+    try {
+      const students = await readDataFromFile();
+      const newStudent = {
+        id: students.length + 1,
+        name: req.body.name,
+        age: req.body.age,
+        grade: req.body.grade
+      };
+      students.push(newStudent);
+      await writeDataToFile(students);
+      res.status(201).json(newStudent);
+    } catch (error) {
+      console.error('Error handling POST request:', error.message);
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  });
 
 app.listen( PORT, ()=> {
     console.log(`Successfully started server on port ${PORT}.`)
