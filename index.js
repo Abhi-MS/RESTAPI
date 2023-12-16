@@ -61,7 +61,7 @@ app.post('/students', async (req, res) => {
     }
   });
 
-app.get('/student/:id', async(req,res) => {
+app.get('/students/:id', async(req,res) => {
     try {
         const students = await readDataFromFile();
         const studentId = parseInt(req.params.id);
@@ -104,6 +104,19 @@ app.put('/students/:id', async(req,res) => {
     } else {
       res.status(404).json({ error: 'Student not found' });
         }
+    } catch (error) {
+        console.error('Error handling POST request:', error.message);
+        res.status(500).json({ error: 'Internal Server Error' }); 
+    }
+})
+
+app.delete('/students/:id', async(req,res) => {
+    try {
+        const students = await readDataFromFile();
+        const studentId = parseInt(req.params.id);
+        const updatedStudents = students.filter((s) => s.id !== studentId);
+        await writeDataToFile(updatedStudents);
+        res.json({ message: 'Student removed successfully' });
     } catch (error) {
         console.error('Error handling POST request:', error.message);
         res.status(500).json({ error: 'Internal Server Error' }); 
